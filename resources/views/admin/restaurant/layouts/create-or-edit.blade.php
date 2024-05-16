@@ -71,22 +71,30 @@
                 <span class="text-danger">{{ $message }}</span>
               @enderror 
             </div>
-        <!-- <div class="form-group col-md-6">
-              <label for="image_url">Logo: </label>
-              {{-- <input type="image_url" class="form-control obligate" id="image_url" name="image_url" value="{{old('image_url',$restaurant->image_url) }}" > --}}
-              <span class="required-indicator">* campi obbligatori</span>
-            </div> -->
+            {{-- image --}}
             <div class="input-group col-md-9 m-2">
               <div class="form-group">
-                <label for="image">Inserire un'immagine del ristorante:
+                <label for="image_url">Inserire un'immagine del ristorante:
                   <div class="container-span">
                     <span class="required-indicator">*</span>
                   </div> 
                 </label>
-                <input type="file" class="form-control obligate @error('image_url') is-invalid @enderror" id="image_url" name="image_url" value="{{ old('image_url', $restaurant->image_url)}}">
+                <input type="file" class="form-control obligate @error('image_url') is-invalid @enderror" id="image_url" name="image_url">
+               
+                @if ($restaurant->image_url)
+                    <!-- Anteprima dell'immagine -->
+                    <h4>Image Selected</h4>
+                <div id="imagePreview"></div>
+                @endif
+
                 @error('image_url')
                   <span class="text-danger">{{ $message }}</span>
                 @enderror 
+                <h4>Current Image</h4>
+                @if ($restaurant->image_url)
+                    <img src="{{ asset('storage/' . $restaurant->image_url) }}" alt="Anteprima immagine" style="object-fit:contain;  width: 180px;
+                    height: auto; ">
+                @endif
               </div>
             </div>
             <div>
@@ -150,6 +158,23 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 
+document.getElementById('image_url').addEventListener('change', function(event) {
+    var input = event.target;
+    var reader = new FileReader();
+
+    reader.onload = function() {
+        var dataURL = reader.result;
+        var imagePreview = document.getElementById('imagePreview');
+        if (input.files && input.files[0]) {
+            imagePreview.innerHTML = '<img src="' + dataURL + '" style="max-width: 300px; max-height: 300px;" />';
+        } else {
+            imagePreview.innerHTML = ''; // Rimuovi l'anteprima se non è stata selezionata alcuna immagine
+        }
+    };
+
+    reader.readAsDataURL(input.files[0]);
+});
+
 
 </script>
 
@@ -157,6 +182,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
   
 <style>
+
+#anteprima{
+  width: 80px;
+  height: 100px;
+  object-fit:cover;
+}
     .required-indicator {
       color: red;
       font-weight: bold;

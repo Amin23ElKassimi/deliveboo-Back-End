@@ -20,7 +20,7 @@ class RestaurantController extends Controller
         'address' => ['required', 'max:255'],
         'phone_number' => ['required', 'numeric'],
         'email' => ['required', 'email'],
-        'image_url' => ['required', 'image', 'max:2048', 'mimes:jpeg,png,jpg,gif'],
+        'image_url' => [ 'image', 'max:2048', 'mimes:jpeg,png,jpg,gif'],
         'categories' => ['required'],
     ];
     private $messageError = [
@@ -113,21 +113,25 @@ class RestaurantController extends Controller
         if ($restaurant->user_id !== Auth::id()) {
             abort(403);
         }
+        
         // request + validation
         $data = $request->validate($this->validations, $this->messageError);
         $data['user_id'] = Auth::id();
-
-        $image_url = Storage::put('uploads/restaurants', $data['image_url']);
-        $data['image_url'] = $image_url;
-
+    
+        if ($request->hasFile('image_url')) {
+            $image_url = Storage::put('uploads/restaurants', $request->file('image_url'));
+            $data['image_url'] = $image_url;
+        }
+    
         $data['categories'] = isset($data['categories']) ? $data['categories'] : [];
-
+    
         $restaurant->update($data);
-
+    
         $restaurant->categories()->sync($data['categories']);
-
+    
         return redirect()->route('admin.restaurants.index', $restaurant);
     }
+    
     public function destroy(Restaurant $restaurant)
     {
         if ($restaurant->user_id !== Auth::id()) {
